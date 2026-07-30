@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 class Document(Base, TimestampMixin):
     """
     Document Metadata ORM Model for DocFlow platform.
+    Stores file metadata, format extensions, ownership, and upload status.
     """
     __tablename__ = "documents"
 
@@ -20,7 +21,7 @@ class Document(Base, TimestampMixin):
         default=lambda: str(uuid.uuid4()),
         index=True,
     )
-    user_id: Mapped[str] = mapped_column(
+    owner_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
@@ -35,22 +36,29 @@ class Document(Base, TimestampMixin):
         nullable=False,
         unique=True,
     )
-    file_path: Mapped[str] = mapped_column(
-        String(512),
+    file_extension: Mapped[str] = mapped_column(
+        String(20),
         nullable=False,
-    )
-    file_size_bytes: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
+        index=True,
     )
     mime_type: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
+        index=True,
     )
-    status: Mapped[str] = mapped_column(
-        String(50),
-        default="PENDING",
+    file_size: Mapped[int] = mapped_column(
+        Integer,
         nullable=False,
+    )
+    file_path: Mapped[str] = mapped_column(
+        String(512),
+        nullable=False,
+    )
+    upload_status: Mapped[str] = mapped_column(
+        String(50),
+        default="PROCESSED",
+        nullable=False,
+        index=True,
     )
 
     # Relationships
@@ -58,3 +66,8 @@ class Document(Base, TimestampMixin):
         "User",
         back_populates="documents",
     )
+
+    # Compatibility property helper for user_id
+    @property
+    def user_id(self) -> str:
+        return self.owner_id
