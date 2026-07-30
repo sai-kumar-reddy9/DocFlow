@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     DEBUG: bool = True
 
+    # JWT Authentication & Security Configuration
+    SECRET_KEY: str = "docflow_super_secret_jwt_key_32_bytes_long_change_in_prod"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    COOKIE_NAME: str = "access_token"
+
     # Database Configuration
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432

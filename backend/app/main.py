@@ -6,6 +6,7 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.api.v1.router import api_v1_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +24,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include API v1 Router (/api/v1/auth/...)
+app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+
 
 @app.get("/", tags=["Health"])
 async def root():
@@ -31,20 +35,19 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health",
+        "api_v1": f"{settings.API_V1_STR}",
     }
 
 
 @app.get("/health", tags=["Health"])
 async def health_check(db: AsyncSession = Depends(get_db)):
     """
-    Phase 2 System & Database Connection Health Check.
-    Verifies that FastAPI is running and SQLAlchemy AsyncSession can query PostgreSQL.
+    System & Database Connection Health Check.
+    Verifies that FastAPI is running and SQLAlchemy AsyncSession can query PostgreSQL/SQLite.
     """
     db_status = "DISCONNECTED"
-    db_latency_ms = None
 
     try:
-        start_time = uvicorn.Server.started if hasattr(uvicorn.Server, "started") else None
         result = await db.execute(text("SELECT 1"))
         if result.scalar() == 1:
             db_status = "CONNECTED"
@@ -56,7 +59,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         "platform": settings.PROJECT_NAME,
         "database": {
             "status": db_status,
-            "engine": "SQLAlchemy 2.0 AsyncSession (asyncpg)",
+            "engine": "SQLAlchemy 2.0 AsyncSession",
         },
         "environment": {
             "debug": settings.DEBUG,
