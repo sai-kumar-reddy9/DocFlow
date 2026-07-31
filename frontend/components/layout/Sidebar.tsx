@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
-// Icons
 const LayoutDashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -20,25 +20,6 @@ const FolderIcon = () => (
 const UploadIcon = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-  </svg>
-);
-
-const WorkflowIcon = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
-
-const SettingsIcon = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
 
@@ -66,21 +47,21 @@ const LogOutIcon = () => (
   </svg>
 );
 
-interface SidebarProps {
-  currentRole: "ADMIN" | "USER";
-  onRoleToggle: () => void;
-}
-
-export default function Sidebar({ currentRole, onRoleToggle }: SidebarProps) {
+export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
     { label: "My Documents", href: "/documents", icon: FolderIcon },
     { label: "Upload Document", href: "/upload", icon: UploadIcon },
-    { label: "System Workflow", href: "/workflow", icon: WorkflowIcon },
-    { label: "Profile", href: "/profile", icon: UserIcon },
-    { label: "Settings", href: "/settings", icon: SettingsIcon },
   ];
 
   const adminItems = [
@@ -88,6 +69,15 @@ export default function Sidebar({ currentRole, onRoleToggle }: SidebarProps) {
     { label: "User Management", href: "/admin/users", icon: UsersIcon },
     { label: "System Health & Logs", href: "/admin/health", icon: ActivityIcon },
   ];
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 min-h-screen text-slate-200">
@@ -108,25 +98,6 @@ export default function Sidebar({ currentRole, onRoleToggle }: SidebarProps) {
             </span>
           </div>
         </Link>
-
-        {/* Role Toggle Switcher for Prototype Testing */}
-        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">View Mode:</span>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-              currentRole === "ADMIN" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-            }`}>
-              {currentRole}
-            </span>
-          </div>
-          <button
-            onClick={onRoleToggle}
-            className="text-[11px] font-medium text-slate-400 hover:text-white underline underline-offset-2 transition-colors"
-            title="Toggle between User and Admin roles for UI prototyping"
-          >
-            Switch
-          </button>
-        </div>
 
         {/* Primary Navigation */}
         <nav className="space-y-1">
@@ -153,8 +124,8 @@ export default function Sidebar({ currentRole, onRoleToggle }: SidebarProps) {
           })}
         </nav>
 
-        {/* Admin Navigation (Shown if currentRole === "ADMIN") */}
-        {currentRole === "ADMIN" && (
+        {/* Admin Navigation (Only shown if user.role === "ADMIN") */}
+        {user?.role === "ADMIN" && (
           <nav className="space-y-1 pt-2 border-t border-slate-800">
             <div className="flex items-center justify-between px-3 mb-2">
               <p className="text-[11px] font-bold uppercase tracking-wider text-purple-400">
@@ -187,22 +158,22 @@ export default function Sidebar({ currentRole, onRoleToggle }: SidebarProps) {
       {/* User Footer Account Pill */}
       <div className="p-4 border-t border-slate-800 bg-slate-950/60">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs shadow-md">
-              JD
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs shadow-md shrink-0">
+              {getInitials(user?.full_name)}
             </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-white truncate">John Doe</p>
-              <p className="text-[11px] text-slate-400 truncate">john@docflow.io</p>
+            <div className="overflow-hidden min-w-0">
+              <p className="text-xs font-semibold text-white truncate">{user?.full_name || "Authenticated User"}</p>
+              <p className="text-[11px] text-slate-400 truncate">{user?.email || "user@docflow.io"}</p>
             </div>
           </div>
-          <Link
-            href="/login"
-            className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          <button
+            onClick={handleLogout}
+            className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
             title="Log Out"
           >
             <LogOutIcon />
-          </Link>
+          </button>
         </div>
       </div>
     </aside>

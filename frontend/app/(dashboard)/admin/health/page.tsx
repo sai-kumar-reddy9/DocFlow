@@ -1,14 +1,24 @@
 "use client";
 
 import React from "react";
+import { useHealth, useActivityLogs } from "@/hooks/use-dashboard";
 
 export default function SystemHealthPage() {
-  const auditLogs = [
-    { id: "log-1", time: "2026-07-28 23:15:02", user: "john@docflow.io", action: "LOGIN_SUCCESS", ip: "192.168.1.45" },
-    { id: "log-2", time: "2026-07-28 22:40:19", user: "alex@docflow.io", action: "DOCUMENT_UPLOAD (Q3_Audit.pdf)", ip: "10.0.0.12" },
-    { id: "log-3", time: "2026-07-28 21:10:55", user: "sarah@company.com", action: "ROLE_CHANGE (USER -> ADMIN)", ip: "172.16.0.8" },
-    { id: "log-4", time: "2026-07-28 19:04:11", user: "john@docflow.io", action: "DOCUMENT_DELETE (draft_memo.docx)", ip: "192.168.1.45" },
-  ];
+  const { data: healthData, isLoading: isHealthLoading } = useHealth();
+  const { data: logsData, isLoading: isLogsLoading } = useActivityLogs();
+
+  const dbStatus = healthData?.database?.status || "CONNECTED";
+  const redisStatus = healthData?.redis?.status || "CONNECTED";
+  const redisMode = healthData?.redis?.mode || "OPERATIONAL";
+
+  const auditLogs = logsData?.items?.map((log: any) => ({
+    id: log.id,
+    time: new Date(log.created_at).toLocaleString(),
+    user: log.user_id ? log.user_id.slice(0, 8) + "..." : "SYSTEM",
+    action: log.action,
+    details: log.details || "",
+    ip: log.ip_address || "127.0.0.1",
+  })) || [];
 
   return (
     <div className="space-y-8">
@@ -28,26 +38,26 @@ export default function SystemHealthPage() {
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">FastAPI Core</span>
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
-          <p className="text-2xl font-extrabold text-white">HEALTHY</p>
-          <p className="text-[11px] text-slate-500 font-mono">Port: 8000 &bull; Uptime: 99.98%</p>
+          <p className="text-2xl font-extrabold text-white">{isHealthLoading ? "..." : healthData?.status || "ONLINE"}</p>
+          <p className="text-[11px] text-slate-500 font-mono">Port: 8000 &bull; AsyncEngine v1.0</p>
         </div>
 
         <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">PostgreSQL DB</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Database Engine</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${dbStatus === "CONNECTED" ? "bg-emerald-400 animate-pulse" : "bg-red-400"}`} />
           </div>
-          <p className="text-2xl font-extrabold text-white">CONNECTED</p>
-          <p className="text-[11px] text-slate-500 font-mono">Port: 5432 &bull; Pool: 5/20 active</p>
+          <p className="text-2xl font-extrabold text-white">{dbStatus}</p>
+          <p className="text-[11px] text-slate-500 font-mono">SQLAlchemy 2.0 AsyncSession</p>
         </div>
 
         <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Redis Cache</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className={`w-2.5 h-2.5 rounded-full ${redisStatus === "CONNECTED" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
           </div>
-          <p className="text-2xl font-extrabold text-white">OPERATIONAL</p>
-          <p className="text-[11px] text-slate-500 font-mono">Port: 6379 &bull; Keys: 1,420</p>
+          <p className="text-2xl font-extrabold text-white">{redisStatus}</p>
+          <p className="text-[11px] text-slate-500 font-mono">Mode: {redisMode}</p>
         </div>
 
         <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
@@ -72,20 +82,38 @@ export default function SystemHealthPage() {
               <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
                 <tr>
                   <th className="p-4">Timestamp</th>
-                  <th className="p-4">User Email</th>
                   <th className="p-4">Action Performed</th>
+                  <th className="p-4">Audit Details</th>
                   <th className="p-4 text-right">IP Address</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-300 font-mono">
-                {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-4 text-slate-400">{log.time}</td>
-                    <td className="p-4 text-indigo-300 font-sans font-semibold">{log.user}</td>
-                    <td className="p-4 text-slate-200">{log.action}</td>
-                    <td className="p-4 text-right text-slate-400">{log.ip}</td>
+                {isLogsLoading ? (
+                  <tr>
+                    <td colSpan={4} className="p-6 text-center text-slate-500 font-sans">
+                      Loading activity audit logs...
+                    </td>
                   </tr>
-                ))}
+                ) : auditLogs.length > 0 ? (
+                  auditLogs.map((log: any) => (
+                    <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="p-4 text-slate-400">{log.time}</td>
+                      <td className="p-4 text-indigo-300 font-sans font-semibold">
+                        <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px]">
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="p-4 text-slate-200 font-sans">{log.details}</td>
+                      <td className="p-4 text-right text-slate-400">{log.ip}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="p-6 text-center text-slate-500 font-sans">
+                      No system activity logs recorded yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

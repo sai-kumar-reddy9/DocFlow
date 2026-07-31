@@ -5,45 +5,40 @@ import Link from "next/link";
 import UploadsBarChart from "@/components/dashboard/UploadsBarChart";
 import FileTypePieChart from "@/components/dashboard/FileTypePieChart";
 import StorageProgressCard from "@/components/dashboard/StorageProgressCard";
-import {
-  MOCK_UPLOADS_LAST_7_DAYS,
-  MOCK_DOCUMENTS_BY_FILE_TYPE,
-  MOCK_STORAGE_STATS,
-} from "@/lib/mock-data";
+import { useUserDashboardStats, useUserDocuments } from "@/hooks/use-dashboard";
 
 export default function UserDashboardPage() {
-  /**
-   * Future Integration with FastAPI & TanStack Query:
-   * 
-   * const { data: weeklyUploads = MOCK_UPLOADS_LAST_7_DAYS } = useQuery({
-   *   queryKey: ['analytics', 'user', 'uploads-7d'],
-   *   queryFn: () => api.get('/api/v1/analytics/uploads-7d').then(res => res.data),
-   * });
-   * 
-   * const { data: fileTypes = MOCK_DOCUMENTS_BY_FILE_TYPE } = useQuery({
-   *   queryKey: ['analytics', 'user', 'file-types'],
-   *   queryFn: () => api.get('/api/v1/analytics/file-types').then(res => res.data),
-   * });
-   * 
-   * const { data: storageStats = MOCK_STORAGE_STATS } = useQuery({
-   *   queryKey: ['analytics', 'user', 'storage'],
-   *   queryFn: () => api.get('/api/v1/analytics/storage').then(res => res.data),
-   * });
-   */
+  // Live API integration via TanStack Query
+  const { data: statsData, isLoading: isStatsLoading } = useUserDashboardStats();
+  const { data: docsData, isLoading: isDocsLoading } = useUserDocuments();
+
+  // Extract live metrics
+  const uploadsData = statsData?.uploads_7_days || [];
+  const fileTypesData = statsData?.file_type_distribution || [];
+  const storageData = {
+    usedMb: statsData?.storage_used_mb ?? 0,
+    totalMb: 5120, // 5.0 GB storage limit
+    documentCount: statsData?.total_files ?? 0,
+  };
+
+  const totalFilesCount = statsData?.total_files ?? 0;
+  const storageMbStr = statsData ? `${statsData.storage_used_mb} MB` : "0 MB";
 
   const stats = [
-    { label: "Total Documents", value: "48", change: "+12% this month", color: "from-indigo-500 to-blue-500" },
-    { label: "Processing Queue", value: "3", change: "2 pending validation", color: "from-purple-500 to-indigo-500" },
-    { label: "Storage Used", value: "142 MB", change: "of 5.0 GB limit", color: "from-blue-500 to-cyan-500" },
-    { label: "System Health", value: "99.9%", change: "All services operational", color: "from-emerald-500 to-teal-500" },
+    { label: "Total Documents", value: totalFilesCount.toString(), change: "Live workspace files", color: "from-indigo-500 to-blue-500" },
+    { label: "Processing Queue", value: "0", change: "All systems clear", color: "from-purple-500 to-indigo-500" },
+    { label: "Storage Used", value: storageMbStr, change: "of 5.0 GB limit", color: "from-blue-500 to-cyan-500" },
+    { label: "System Health", value: "99.9%", change: "Redis + Async API active", color: "from-emerald-500 to-teal-500" },
   ];
 
-  const recentDocs = [
-    { id: "1", name: "Q3_Financial_Audit_Report.pdf", type: "PDF", size: "4.2 MB", status: "PROCESSED", date: "2026-07-28" },
-    { id: "2", name: "Vendor_Contract_Agreement_2026.docx", type: "DOCX", size: "1.8 MB", status: "PROCESSED", date: "2026-07-27" },
-    { id: "3", name: "Employee_Payroll_Summary_July.xlsx", type: "XLSX", size: "3.1 MB", status: "PENDING", date: "2026-07-28" },
-    { id: "4", name: "Product_Roadmap_Q4_v2.pdf", type: "PDF", size: "8.6 MB", status: "PROCESSED", date: "2026-07-25" },
-  ];
+  const recentDocs = docsData?.items?.slice(0, 5).map((doc: any) => ({
+    id: doc.id,
+    name: doc.original_filename,
+    type: doc.file_extension.replace(".", "").toUpperCase(),
+    size: `${(doc.file_size / (1024 * 1024)).toFixed(2)} MB`,
+    status: doc.upload_status,
+    date: new Date(doc.created_at).toISOString().split("T")[0],
+  })) || [];
 
   return (
     <div className="space-y-8">
@@ -52,13 +47,13 @@ export default function UserDashboardPage() {
         <div className="relative z-10 space-y-3 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            DocFlow Platform v1.0
+            DocFlow Platform v1.0 • Live FastAPI Integration
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            Welcome back, John!
+            User Workspace Dashboard
           </h2>
           <p className="text-slate-400 text-sm leading-relaxed">
-            Your document workspace is active. Monitor weekly file velocity, view storage distribution, and track metadata processing.
+            Real-time analytics for your stored files, weekly velocity trends, format distribution, and storage quota.
           </p>
           <div className="pt-2 flex flex-wrap gap-4">
             <Link
@@ -89,7 +84,7 @@ export default function UserDashboardPage() {
               {stat.label}
             </p>
             <p className="text-3xl font-extrabold text-white tracking-tight">
-              {stat.value}
+              {isStatsLoading ? "..." : stat.value}
             </p>
             <p className="text-xs text-slate-500 font-medium">
               {stat.change}
@@ -102,12 +97,12 @@ export default function UserDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Uploads in Last 7 Days (Bar Chart) */}
         <div className="lg:col-span-2">
-          <UploadsBarChart data={MOCK_UPLOADS_LAST_7_DAYS} />
+          <UploadsBarChart data={uploadsData} />
         </div>
 
         {/* Documents by File Type (Pie Chart) */}
         <div>
-          <FileTypePieChart data={MOCK_DOCUMENTS_BY_FILE_TYPE} />
+          <FileTypePieChart data={fileTypesData} />
         </div>
       </div>
 
@@ -136,26 +131,38 @@ export default function UserDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                {recentDocs.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-4 font-semibold text-white flex items-center gap-2">
-                      <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 font-mono text-[10px]">
-                        {doc.type}
-                      </span>
-                      <span className="truncate max-w-xs">{doc.name}</span>
+                {isDocsLoading ? (
+                  <tr>
+                    <td colSpan={5} className="p-6 text-center text-slate-500">
+                      Loading user documents...
                     </td>
-                    <td className="p-4 text-slate-400">{doc.type}</td>
-                    <td className="p-4 text-slate-400">{doc.size}</td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        doc.status === "PROCESSED" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                      }`}>
-                        {doc.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right text-slate-400">{doc.date}</td>
                   </tr>
-                ))}
+                ) : recentDocs.length > 0 ? (
+                  recentDocs.map((doc: any) => (
+                    <tr key={doc.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="p-4 font-semibold text-white flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 font-mono text-[10px]">
+                          {doc.type}
+                        </span>
+                        <span className="truncate max-w-xs">{doc.name}</span>
+                      </td>
+                      <td className="p-4 text-slate-400">{doc.type}</td>
+                      <td className="p-4 text-slate-400">{doc.size}</td>
+                      <td className="p-4">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {doc.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right text-slate-400">{doc.date}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="p-6 text-center text-slate-500">
+                      No documents uploaded yet. Click "Upload New Document" above to get started.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -163,7 +170,7 @@ export default function UserDashboardPage() {
 
         {/* Storage Quota Progress Card */}
         <div>
-          <StorageProgressCard stats={MOCK_STORAGE_STATS} />
+          <StorageProgressCard stats={storageData} />
         </div>
       </div>
     </div>

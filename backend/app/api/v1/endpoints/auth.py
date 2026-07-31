@@ -8,7 +8,7 @@ from app.core.rate_limiter import RateLimiterDependency
 from app.models.user import User
 from app.schemas.token import Token
 from app.schemas.user import UserCreate, UserLogin, UserResponse
-from app.services import auth_service
+from app.services import auth_service, activity_log_service, cache_service
 
 router = APIRouter()
 
@@ -25,6 +25,7 @@ login_rate_limiter = RateLimiterDependency(prefix="auth_login", max_requests=5, 
 )
 async def register(
     user_in: UserCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
     """
@@ -32,6 +33,19 @@ async def register(
     Delegates validation and user creation to auth_service.
     """
     user = await auth_service.register_new_user(db, user_in=user_in)
+
+    client_ip = request.client.host if request.client else None
+    await activity_log_service.log_activity(
+        db=db,
+        user_id=user.id,
+        action="USER_REGISTERED",
+        details=f"User account created for {user.email}",
+        ip_address=client_ip,
+    )
+
+    # Invalidate Admin Analytics Cache
+    await cache_service.delete_cache_key("analytics:admin:overview")
+
     return user
 
 
@@ -44,6 +58,7 @@ async def register(
 )
 async def login(
     response: Response,
+    request: Request,
     user_in: UserLogin,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -67,6 +82,15 @@ async def login(
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         samesite="lax",
         secure=False,  # Set to True in HTTPS production environments
+    )
+
+    client_ip = request.client.host if request.client else None
+    await activity_log_service.log_activity(
+        db=db,
+        user_id=user.id,
+        action="USER_LOGIN",
+        details=f"Successful authentication for {user.email}",
+        ip_address=client_ip,
     )
 
     return Token(access_token=access_token, token_type="bearer")

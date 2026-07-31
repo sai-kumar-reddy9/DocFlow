@@ -2,22 +2,30 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api-client";
 
 export default function UploadPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
 
-  const allowedExtensions = [".pdf", ".docx", ".xlsx"];
+  const allowedExtensions = [".pdf", ".docx", ".txt"];
 
   const handleFileChange = (file: File | null) => {
     if (!file) return;
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
     if (!allowedExtensions.includes(ext)) {
-      setError("Invalid file format. Only PDF, DOCX, and XLSX files are permitted.");
+      setError("Invalid file format. Only PDF, DOCX, and TXT files are permitted.");
+      setSelectedFile(null);
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File size exceeds maximum permitted limit of 10 MB.");
       setSelectedFile(null);
       return;
     }
@@ -44,7 +52,7 @@ export default function UploadPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
       setError("Please select a valid document to upload.");
@@ -52,21 +60,26 @@ export default function UploadPage() {
     }
 
     setIsUploading(true);
-    setUploadProgress(0);
+    setError("");
 
-    // Simulate progress upload
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            router.push("/documents");
-          }, 600);
-          return 100;
-        }
-        return prev + 25;
-      });
-    }, 300);
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      await api.post("/documents/upload", formData);
+
+      // Invalidate relevant TanStack Query caches
+      queryClient.invalidateQueries({ queryKey: ["documents", "mine"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "user-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "documents"] });
+
+      router.push("/documents");
+    } catch (err: any) {
+      setError(err.message || "Failed to upload document.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -76,7 +89,7 @@ export default function UploadPage() {
           Upload Document
         </h2>
         <p className="text-sm text-slate-400">
-          Upload your files (PDF, DOCX, or XLSX) to store on local filesystem and track metadata in PostgreSQL.
+          Upload your files (PDF, DOCX, or TXT) to store on local filesystem and track metadata in PostgreSQL.
         </p>
       </div>
 
@@ -113,14 +126,14 @@ export default function UploadPage() {
                 browse files
                 <input
                   type="file"
-                  accept=".pdf,.docx,.xlsx"
+                  accept=".pdf,.docx,.txt"
                   className="hidden"
                   onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                 />
               </label>
             </p>
             <p className="text-xs text-slate-500">
-              Supported Formats: PDF, DOCX, XLSX (Max size: 15 MB)
+              Supported Formats: PDF, DOCX, TXT (Max size: 10 MB)
             </p>
           </div>
 
@@ -128,7 +141,7 @@ export default function UploadPage() {
           <div className="flex gap-2 pt-2">
             <span className="px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-mono font-bold">.PDF</span>
             <span className="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-mono font-bold">.DOCX</span>
-            <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold">.XLSX</span>
+            <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold">.TXT</span>
           </div>
         </div>
 
@@ -154,29 +167,13 @@ export default function UploadPage() {
           </div>
         )}
 
-        {/* Upload Progress Bar */}
-        {isUploading && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-slate-300">
-              <span>Uploading document...</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
-              <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Submit Button */}
         <button
           type="submit"
           disabled={!selectedFile || isUploading}
           className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isUploading ? "Uploading..." : "Start Upload & Store Metadata"}
+          {isUploading ? "Uploading file to server..." : "Start Upload & Store Metadata"}
         </button>
       </form>
     </div>

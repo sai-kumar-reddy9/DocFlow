@@ -2,8 +2,8 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
-// Icons
 const SearchIcon = () => (
   <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -16,28 +16,23 @@ const BellIcon = () => (
   </svg>
 );
 
-interface HeaderProps {
-  currentRole: "ADMIN" | "USER";
-}
-
-export default function Header({ currentRole }: HeaderProps) {
+export default function Header() {
   const pathname = usePathname();
+  const user = useAuthStore((state) => state.user);
 
-  // Determine readable page title from route
   const getPageTitle = (path: string) => {
     switch (path) {
       case "/dashboard": return "User Dashboard";
       case "/documents": return "My Documents";
       case "/upload": return "Upload Document";
-      case "/profile": return "User Profile";
-      case "/settings": return "Application Settings";
-      case "/workflow": return "System Workflow Engine";
       case "/admin": return "Admin Overview & Analytics";
       case "/admin/users": return "User Management Console";
       case "/admin/health": return "System Health & Audit Logs";
       default: return "Dashboard";
     }
   };
+
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <header className="h-16 bg-slate-900/80 border-b border-slate-800 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between">
@@ -60,16 +55,16 @@ export default function Header({ currentRole }: HeaderProps) {
           </div>
           <input
             type="text"
-            placeholder="Search documents, users..."
+            placeholder="Search documents..."
             className="w-full pl-9 pr-4 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           />
         </div>
 
         {/* Role Badge Indicator */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950 border border-slate-800">
-          <span className={`w-2 h-2 rounded-full ${currentRole === "ADMIN" ? "bg-purple-400 animate-pulse" : "bg-emerald-400"}`} />
+          <span className={`w-2 h-2 rounded-full ${isAdmin ? "bg-purple-400 animate-pulse" : "bg-emerald-400"}`} />
           <span className="text-xs font-semibold text-slate-300">
-            {currentRole === "ADMIN" ? "Admin Access" : "Standard User"}
+            {isAdmin ? "Admin Access" : "Standard User"}
           </span>
         </div>
 

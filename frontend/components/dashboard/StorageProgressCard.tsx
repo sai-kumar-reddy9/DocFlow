@@ -1,19 +1,12 @@
 "use client";
 
 import React from "react";
-import { StorageStats } from "@/lib/mock-data";
+import { StorageStats } from "@/types/dashboard";
 
 interface StorageProgressCardProps {
   stats: StorageStats;
 }
 
-/**
- * StorageProgressCard Component
- * 
- * Future Integration:
- * Replace `stats` prop with live response from FastAPI via TanStack Query:
- * `const { data = MOCK_STORAGE_STATS } = useQuery({ queryKey: ['analytics', 'storage-usage'], queryFn: fetchStorageStats });`
- */
 export default function StorageProgressCard({ stats }: StorageProgressCardProps) {
   const percentage = Math.min(Math.round((stats.usedMb / stats.totalMb) * 100), 100);
   const availableMb = Math.max(stats.totalMb - stats.usedMb, 0);

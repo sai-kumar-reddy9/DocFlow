@@ -1,5 +1,5 @@
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,7 +7,7 @@ from app.api.deps import get_db, get_current_active_user
 from app.core.rate_limiter import RateLimiterDependency
 from app.models.user import User
 from app.schemas.document import DocumentResponse, DocumentList
-from app.services import document_service, cache_service
+from app.services import document_service, cache_service, activity_log_service
 
 router = APIRouter()
 
@@ -24,6 +24,7 @@ upload_rate_limiter = RateLimiterDependency(prefix="doc_upload", max_requests=10
     description="Validates file size (max 10MB) and format, saves to local disk, stores metadata in database, and invalidates Redis cache.",
 )
 async def upload_document(
+    request: Request,
     file: UploadFile = File(..., description="Target document file (PDF, DOCX, or TXT)"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -38,8 +39,18 @@ async def upload_document(
         owner_id=current_user.id,
     )
 
-    # Invalidate Redis user documents & dashboard cache
+    client_ip = request.client.host if request.client else None
+    await activity_log_service.log_activity(
+        db=db,
+        user_id=current_user.id,
+        action="DOCUMENT_UPLOADED",
+        details=f"Uploaded document {document.original_filename} ({document.file_size} bytes)",
+        ip_address=client_ip,
+    )
+
+    # Invalidate Redis user documents, dashboard cache, and admin analytics cache
     await cache_service.invalidate_user_cache(current_user.id)
+    await cache_service.delete_cache_key("analytics:admin:overview")
 
     return document
 
@@ -149,6 +160,7 @@ async def download_document(
 )
 async def delete_document(
     document_id: str,
+    request: Request,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -169,9 +181,19 @@ async def delete_document(
             detail="Access forbidden: You do not have permission to delete this document.",
         )
 
+    client_ip = request.client.host if request.client else None
+    await activity_log_service.log_activity(
+        db=db,
+        user_id=current_user.id,
+        action="DOCUMENT_DELETED",
+        details=f"Deleted document {document.original_filename} (id={document.id})",
+        ip_address=client_ip,
+    )
+
     await document_service.delete_document(db, document=document)
 
-    # Invalidate Redis user documents & dashboard cache
+    # Invalidate Redis user documents, dashboard cache, and admin analytics cache
     await cache_service.invalidate_user_cache(current_user.id)
+    await cache_service.delete_cache_key("analytics:admin:overview")
 
     return {"message": "Document successfully deleted."}
