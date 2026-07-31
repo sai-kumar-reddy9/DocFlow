@@ -4,19 +4,24 @@ from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, get_current_active_user
+from app.core.rate_limiter import RateLimiterDependency
 from app.models.user import User
 from app.schemas.document import DocumentResponse, DocumentList
-from app.services import document_service
+from app.services import document_service, cache_service
 
 router = APIRouter()
+
+# Redis Rate Limiter: Max 10 uploads per minute per user/IP
+upload_rate_limiter = RateLimiterDependency(prefix="doc_upload", max_requests=10, window_seconds=60)
 
 
 @router.post(
     "/upload",
     response_model=DocumentResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(upload_rate_limiter)],
     summary="Upload document (PDF, DOCX, TXT)",
-    description="Validates file size (max 10MB) and format, saves to local disk, and stores metadata in database.",
+    description="Validates file size (max 10MB) and format, saves to local disk, stores metadata in database, and invalidates Redis cache.",
 )
 async def upload_document(
     file: UploadFile = File(..., description="Target document file (PDF, DOCX, or TXT)"),
@@ -25,32 +30,49 @@ async def upload_document(
 ) -> Any:
     """
     Document Upload Endpoint.
-    Stores file in backend/uploads/ and creates database metadata record.
+    Stores file in backend/uploads/, creates DB metadata, and invalidates user cache.
     """
     document = await document_service.create_document(
         db=db,
         file=file,
         owner_id=current_user.id,
     )
+
+    # Invalidate Redis user documents & dashboard cache
+    await cache_service.invalidate_user_cache(current_user.id)
+
     return document
 
 
 @router.get(
     "",
     response_model=DocumentList,
-    summary="List documents for current authenticated user",
-    description="Returns all document metadata records belonging strictly to the requesting user.",
+    summary="List documents for current authenticated user (Redis Cached)",
+    description="Returns all document metadata records for requesting user. Reads from Redis cache if available, falling back to PostgreSQL/SQLite on cache miss.",
 )
 async def list_my_documents(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> Any:
     """
-    List User Documents Endpoint.
-    Strictly isolated to current_user.id.
+    List User Documents Endpoint with Redis Caching.
+    Cache Key: `documents:user:{user_id}`
     """
+    cache_key = cache_service.build_user_documents_cache_key(current_user.id)
+
+    # 1. Try fetching from Redis Cache
+    cached_data = await cache_service.get_cached_json(cache_key)
+    if cached_data:
+        return DocumentList(**cached_data)
+
+    # 2. Database Query on Cache Miss
     documents = await document_service.get_user_documents(db, owner_id=current_user.id)
-    return DocumentList(items=documents, total=len(documents))
+    doc_list = DocumentList(items=documents, total=len(documents))
+
+    # 3. Store fresh result in Redis Cache with TTL
+    await cache_service.set_cached_json(cache_key, doc_list.model_dump())
+
+    return doc_list
 
 
 @router.get(
@@ -123,7 +145,7 @@ async def download_document(
 @router.delete(
     "/{document_id}",
     summary="Delete document",
-    description="Removes physical file from disk and deletes metadata from database. Enforces ownership authorization.",
+    description="Removes physical file from disk, deletes DB metadata, and invalidates Redis user cache. Enforces ownership authorization.",
 )
 async def delete_document(
     document_id: str,
@@ -148,4 +170,8 @@ async def delete_document(
         )
 
     await document_service.delete_document(db, document=document)
+
+    # Invalidate Redis user documents & dashboard cache
+    await cache_service.invalidate_user_cache(current_user.id)
+
     return {"message": "Document successfully deleted."}

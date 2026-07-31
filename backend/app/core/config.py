@@ -34,6 +34,15 @@ class Settings(BaseSettings):
     # Enable SQLite fallback if PostgreSQL service is not running locally
     USE_SQLITE_FALLBACK: bool = False
 
+    # Redis Cache & Rate Limiting Configuration
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None
+    REDIS_URL: Optional[str] = None
+    CACHE_TTL_SECONDS: int = 300  # 5 minutes
+    ENABLE_REDIS_CACHE: bool = True
+
     def get_database_url(self) -> str:
         if self.USE_SQLITE_FALLBACK:
             return "sqlite+aiosqlite:///./docflow.db"
@@ -47,6 +56,13 @@ class Settings(BaseSettings):
         if self.SYNC_DATABASE_URL:
             return self.SYNC_DATABASE_URL
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
+    def get_redis_url(self) -> str:
+        if self.REDIS_URL:
+            return self.REDIS_URL
+        if self.REDIS_PASSWORD:
+            return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
     model_config = SettingsConfigDict(
         env_file=".env",

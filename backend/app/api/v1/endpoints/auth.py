@@ -4,12 +4,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, get_current_active_user, require_admin
 from app.core.config import settings
+from app.core.rate_limiter import RateLimiterDependency
 from app.models.user import User
 from app.schemas.token import Token
 from app.schemas.user import UserCreate, UserLogin, UserResponse
 from app.services import auth_service
 
 router = APIRouter()
+
+# Redis Rate Limiter: Max 5 login attempts per minute per IP
+login_rate_limiter = RateLimiterDependency(prefix="auth_login", max_requests=5, window_seconds=60)
 
 
 @router.post(
@@ -34,8 +38,9 @@ async def register(
 @router.post(
     "/login",
     response_model=Token,
+    dependencies=[Depends(login_rate_limiter)],
     summary="Authenticate user and obtain JWT token",
-    description="Authenticates credentials, returns JWT access token, and sets HTTP-only cookie.",
+    description="Authenticates credentials, returns JWT access token, and sets HTTP-only cookie. Protected by Redis rate limiting (max 5 requests/min).",
 )
 async def login(
     response: Response,
