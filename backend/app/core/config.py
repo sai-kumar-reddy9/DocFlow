@@ -46,19 +46,19 @@ class Settings(BaseSettings):
     def get_database_url(self) -> str:
         if self.USE_SQLITE_FALLBACK:
             return "sqlite+aiosqlite:///./docflow.db"
-        if self.DATABASE_URL:
+        if self.DATABASE_URL and self.POSTGRES_SERVER == "localhost":
             return self.DATABASE_URL
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     def get_sync_database_url(self) -> str:
         if self.USE_SQLITE_FALLBACK:
             return "sqlite:///./docflow.db"
-        if self.SYNC_DATABASE_URL:
+        if self.SYNC_DATABASE_URL and self.POSTGRES_SERVER == "localhost":
             return self.SYNC_DATABASE_URL
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     def get_redis_url(self) -> str:
-        if self.REDIS_URL:
+        if self.REDIS_URL and self.REDIS_HOST == "localhost":
             return self.REDIS_URL
         if self.REDIS_PASSWORD:
             return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"

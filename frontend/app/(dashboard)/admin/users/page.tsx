@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useAdminUsers, useToggleUserStatus, useUpdateUserRole } from "@/hooks/use-dashboard";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function UserManagementPage() {
   const { data: usersData, isLoading } = useAdminUsers();
+  const currentUser = useAuthStore((state) => state.user);
   const toggleStatusMutation = useToggleUserStatus();
   const updateRoleMutation = useUpdateUserRole();
 
@@ -69,53 +71,75 @@ export default function UserManagementPage() {
                   </td>
                 </tr>
               ) : users.length > 0 ? (
-                users.map((u: any) => (
-                  <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-4 font-semibold text-white">
-                      <p className="text-xs font-bold text-white">{u.fullName}</p>
-                      <p className="text-[11px] text-slate-400">{u.email}</p>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        u.role === "ADMIN" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                      }`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        u.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"
-                      }`}>
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-400 font-mono">
-                      {u.totalDocs} files ({u.storageMb} MB)
-                    </td>
-                    <td className="p-4 text-slate-400">{u.createdAt}</td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleToggleRole(u.id, u.role)}
-                          disabled={updateRoleMutation.isPending}
-                          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition-colors disabled:opacity-50"
-                          title="Toggle Role between ADMIN and USER"
-                        >
-                          Toggle Role
-                        </button>
-                        <button
-                          onClick={() => handleToggleStatus(u.id, u.status)}
-                          disabled={toggleStatusMutation.isPending}
-                          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors border disabled:opacity-50 ${
-                            u.status === "ACTIVE" ? "bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                          }`}
-                        >
-                          {u.status === "ACTIVE" ? "Disable" : "Enable"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                users.map((u: any) => {
+                  const isPrimaryAdmin = u.email.toLowerCase() === "admin@docflow.io";
+                  const isSelf = u.id === currentUser?.id || u.email.toLowerCase() === currentUser?.email?.toLowerCase();
+
+                  return (
+                    <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="p-4 font-semibold text-white">
+                        <p className="text-xs font-bold text-white flex items-center gap-2">
+                          {u.fullName}
+                          {isSelf && (
+                            <span className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px]">
+                              You
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-[11px] text-slate-400">{u.email}</p>
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          u.role === "ADMIN" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          u.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"
+                        }`}>
+                          {u.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-slate-400 font-mono">
+                        {u.totalDocs} files ({u.storageMb} MB)
+                      </td>
+                      <td className="p-4 text-slate-400">{u.createdAt}</td>
+                      <td className="p-4 text-right">
+                        {isPrimaryAdmin ? (
+                          <span className="px-2.5 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[11px] font-medium inline-block">
+                            Primary System Admin
+                          </span>
+                        ) : isSelf ? (
+                          <span className="px-2.5 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-medium inline-block">
+                            Current Active Session
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleToggleRole(u.id, u.role)}
+                              disabled={updateRoleMutation.isPending}
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition-colors disabled:opacity-50"
+                              title="Toggle Role between ADMIN and USER"
+                            >
+                              Toggle Role
+                            </button>
+                            <button
+                              onClick={() => handleToggleStatus(u.id, u.status)}
+                              disabled={toggleStatusMutation.isPending}
+                              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors border disabled:opacity-50 ${
+                                u.status === "ACTIVE" ? "bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                              }`}
+                            >
+                              {u.status === "ACTIVE" ? "Disable" : "Enable"}
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500">

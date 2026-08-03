@@ -77,14 +77,26 @@ async def update_user_status_endpoint(
     """
     Enable/Disable User Account (ADMIN ONLY).
     """
-    updated_user = await admin_service.update_user_status(
-        db, user_id=user_id, is_active=status_in.is_active
-    )
-    if not updated_user:
+    target_user = await admin_service.get_user_detail_by_id(db, user_id=user_id)
+    if not target_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found.",
         )
+    if target_user.id == admin_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Modifying active status of your own account is restricted.",
+        )
+    if target_user.email.lower() == "admin@docflow.io":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Modifying active status of primary root administrator (admin@docflow.io) is restricted.",
+        )
+
+    updated_user = await admin_service.update_user_status(
+        db, user_id=user_id, is_active=status_in.is_active
+    )
 
     client_ip = request.client.host if request.client else None
     action_str = "USER_ENABLED" if status_in.is_active else "USER_DISABLED"
@@ -119,14 +131,26 @@ async def update_user_role_endpoint(
     """
     Update User Role (ADMIN ONLY).
     """
-    updated_user = await admin_service.update_user_role(
-        db, user_id=user_id, new_role=role_in.role
-    )
-    if not updated_user:
+    target_user = await admin_service.get_user_detail_by_id(db, user_id=user_id)
+    if not target_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found.",
         )
+    if target_user.id == admin_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Modifying role of your own account is restricted.",
+        )
+    if target_user.email.lower() == "admin@docflow.io":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Modifying role of primary root administrator (admin@docflow.io) is restricted.",
+        )
+
+    updated_user = await admin_service.update_user_role(
+        db, user_id=user_id, new_role=role_in.role
+    )
 
     client_ip = request.client.host if request.client else None
     await activity_log_service.log_activity(
