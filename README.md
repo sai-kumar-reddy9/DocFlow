@@ -56,8 +56,9 @@ docker compose exec backend python app/create_admin.py myadmin@company.com MyPas
 ```
 
 ### Default Admin Credentials Created:
-- **Email**: `admin@docflow.io`
-- **Password**: `AdminPassword123!`
+A development admin account can be created using:
+
+docker compose exec backend python app/create_admin.py
 
 ### Method 2: Promoting via Admin Console
 Once logged in as an Admin (`admin@docflow.io`), navigate to **User Management Console** (`/admin/users`) to promote any user account by clicking **Toggle Role**.
