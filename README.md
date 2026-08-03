@@ -48,7 +48,7 @@ To create or promote an Admin account:
 Run the CLI utility script inside the running backend container:
 
 ```bash
-# Create or promote default Admin account (admin@docflow.io / AdminPassword123!)
+# Create or promote default Admin account 
 docker compose exec backend python app/create_admin.py
 
 # Or specify custom credentials:
