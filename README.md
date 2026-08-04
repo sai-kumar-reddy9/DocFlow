@@ -37,7 +37,7 @@ Comprehensive documentation reflecting the **actual source code implementation**
 
 ---
 
-## 🏗 Architecture & Tech Stack Summary
+## Architecture & Tech Stack Summary
 
 - **Frontend**: Next.js 16 (App Router), TypeScript, Tailwind CSS, TanStack Query v5, Recharts, Zustand.
 - **Backend**: FastAPI, Async SQLAlchemy 2.0 (with AsyncPG), Pydantic v2, Alembic migrations.
@@ -48,7 +48,7 @@ Comprehensive documentation reflecting the **actual source code implementation**
 
 ---
 
-## 🚀 Quick Start with Docker Compose
+## Quick Start with Docker Compose
 
 Run the entire multi-container stack with a single command:
 
@@ -70,7 +70,7 @@ docker compose up -d --build
 
 ---
 
-## 🔑 Creating & Managing Admin Users
+## Creating & Managing Admin Users
 
 For security hardening, the public registration page (`/signup`) **always creates accounts with the `USER` role** by default.
 
@@ -91,7 +91,7 @@ Once logged in as an Admin (`admin@docflow.io`), navigate to **User Management C
 
 ---
 
-## 🐳 Docker Command Cheat Sheet
+##  Docker Command Cheat Sheet
 
 ```bash
 # Start all containers in background
@@ -112,7 +112,7 @@ docker compose exec redis redis-cli ping
 
 ---
 
-## 🔄 Automatic Database Migrations
+##  Automatic Database Migrations
 
 When the backend container starts, `entrypoint.sh` automatically executes:
 
