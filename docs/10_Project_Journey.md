@@ -4,7 +4,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## 🗺 Phase 0 — Architecture & Planning
+## Phase 0 — Architecture & Planning
 
 ### Objectives
 - Define simplified workspace directory layout (`frontend/`, `backend/`, `docs/`, `docker/`).
@@ -21,7 +21,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## 🎨 Phase 1 — Frontend Foundation
+## Phase 1 — Frontend Foundation
 
 ### Objectives
 - Initialize Next.js 16 application with TypeScript and Tailwind CSS.
@@ -45,7 +45,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## ⚙️ Phase 2 — Backend Foundation
+## Phase 2 — Backend Foundation
 
 ### Objectives
 - Set up FastAPI backend framework and Pydantic v2 BaseSettings configuration.
@@ -66,7 +66,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## 🔑 Phase 3 — Authentication & Role-Based Access Control (RBAC)
+## Phase 3 — Authentication & Role-Based Access Control (RBAC)
 
 ### Objectives
 - Implement Argon2id password hashing and PyJWT token generation.
@@ -91,7 +91,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## 📄 Phase 4 — Document Management & Local Storage
+## Phase 4 — Document Management & Local Storage
 
 ### Objectives
 - Implement secure file uploads (.pdf, .docx, .txt) with server-side 10MB size limit.
@@ -111,7 +111,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## ⚡ Phase 5 — Redis Integration & Rate Limiting
+## Phase 5 — Redis Integration & Rate Limiting
 
 ### Objectives
 - Integrate asynchronous Redis client (`redis.asyncio`) with FakeRedis fallback.
@@ -131,7 +131,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## 📊 Phase 6 — Admin Module & Full Live Integration
+## Phase 6 — Admin Module & Full Live Integration
 
 ### Objectives
 - Build administrative endpoints (`/admin/users`, `/admin/analytics`, `/admin/activity-logs`).
@@ -156,7 +156,7 @@ An exhaustive chronological history documenting the implementation of DocFlow fr
 
 ---
 
-## 🐳 Phase 7 — Docker & Docker Compose Containerization
+## Phase 7 — Docker & Docker Compose Containerization
 
 ### Objectives
 - Containerize FastAPI backend (`Python 3.11 slim`) and Next.js frontend (`Node 20 Alpine multi-stage`).

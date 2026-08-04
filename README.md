@@ -4,7 +4,7 @@ DocFlow is an enterprise-ready, production-grade Document Management & AI Workfl
 
 ---
 
-## 📸 Application Screenshots & UI Showcase
+## Application Screenshots & UI Showcase
 
 | View / Page | Screenshot Preview |
 | :--- | :--- |
@@ -18,7 +18,7 @@ DocFlow is an enterprise-ready, production-grade Document Management & AI Workfl
 
 ---
 
-## 📚 Complete Project Documentation Index
+## Complete Project Documentation Index
 
 Comprehensive documentation reflecting the **actual source code implementation** is available in the [`docs/`](docs/) directory:
 
@@ -91,7 +91,7 @@ Once logged in as an Admin (`admin@docflow.io`), navigate to **User Management C
 
 ---
 
-##  Docker Command Cheat Sheet
+## Docker Command Cheat Sheet
 
 ```bash
 # Start all containers in background
@@ -112,7 +112,7 @@ docker compose exec redis redis-cli ping
 
 ---
 
-##  Automatic Database Migrations
+## Automatic Database Migrations
 
 When the backend container starts, `entrypoint.sh` automatically executes:
 

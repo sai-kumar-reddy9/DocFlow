@@ -1,6 +1,6 @@
 # 05 — Backend Architecture
 
-## 🚀 FastAPI Core Architecture
+## FastAPI Core Architecture
 
 The DocFlow backend is built on **FastAPI** using asynchronous Python 3.11 features (`async`/`await`), **SQLAlchemy 2.0 AsyncSession**, and **Pydantic v2** data schemas.
 
@@ -45,7 +45,7 @@ The DocFlow backend is built on **FastAPI** using asynchronous Python 3.11 featu
 
 ---
 
-## 💉 Dependency Injection Design (`app/api/deps.py`)
+## Dependency Injection Design (`app/api/deps.py`)
 
 FastAPI's dependency injection system decouples database session management, authentication verification, role authorization, and rate limiting from HTTP request handlers.
 
@@ -83,7 +83,7 @@ Enforces strict Role-Based Access Control (RBAC) across administrative endpoints
 
 ---
 
-## ⏱ Custom Redis Sliding-Window Rate Limiter (`app/core/rate_limiter.py`)
+## Custom Redis Sliding-Window Rate Limiter (`app/core/rate_limiter.py`)
 
 Rate limiting protects sensitive endpoints against denial-of-service and brute-force attacks using atomic Redis sorted sets (`ZSET`).
 
@@ -124,7 +124,7 @@ class RateLimiterDependency:
 
 ---
 
-## 💾 Caching Strategy & Redis Integration (`app/services/cache_service.py`)
+## Caching Strategy & Redis Integration (`app/services/cache_service.py`)
 
 Redis caches expensive analytical query results to maintain sub-10ms response times.
 
@@ -141,7 +141,7 @@ Whenever a state-modifying action occurs:
 
 ---
 
-## 📝 Activity Logging Service (`app/services/activity_log_service.py`)
+## Activity Logging Service (`app/services/activity_log_service.py`)
 
 Audit logs record critical security and system events asynchronously into PostgreSQL.
 
@@ -155,7 +155,7 @@ Audit logs record critical security and system events asynchronously into Postgr
 
 ---
 
-## 🛡 Centralized Error Handling & Exception Management
+## Centralized Error Handling & Exception Management
 
 FastAPI endpoints handle errors uniformly with standardized HTTP status codes and JSON error responses:
 

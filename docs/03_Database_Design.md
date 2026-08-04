@@ -1,6 +1,6 @@
 # 03 — Database Design
 
-## 🗄 Entity-Relationship (ER) Diagram
+## Entity-Relationship (ER) Diagram
 
 ```mermaid
 erDiagram
@@ -44,7 +44,7 @@ erDiagram
 
 ---
 
-## 📋 Detailed SQLAlchemy Model Specifications
+## Detailed SQLAlchemy Model Specifications
 
 ### 1. `User` Model (`backend/app/models/user.py`)
 Stores user accounts, credentials, role assignments, and active flags.
@@ -102,7 +102,7 @@ Stores immutable system activity audit logs for security auditing.
 
 ---
 
-## ⚡ Database Indexes & Performance Optimization
+## Database Indexes & Performance Optimization
 
 To guarantee sub-second query latency under high load, explicit database indexes are placed on:
 
@@ -114,7 +114,7 @@ To guarantee sub-second query latency under high load, explicit database indexes
 
 ---
 
-## 🔄 Alembic Migration Architecture & Evolution
+## Alembic Migration Architecture & Evolution
 
 Database migrations are managed via **Alembic**.
 

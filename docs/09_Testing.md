@@ -1,12 +1,12 @@
 # 09 — Testing & Quality Assurance
 
-## 🧪 Comprehensive Testing Architecture
+## Comprehensive Testing Architecture
 
 DocFlow was verified using a combination of automated Python test suites (`test_phase3` through `test_phase6`), Swagger API interactive testing, TypeScript compilation verification, and containerized health checks.
 
 ---
 
-## 🎯 1. Phase-by-Phase Automated Test Suites
+## 1. Phase-by-Phase Automated Test Suites
 
 The backend includes four dedicated automated test suites located in `backend/`:
 
@@ -68,7 +68,7 @@ python test_phase6_admin.py
 
 ---
 
-## 🎨 2. Frontend & Static Type Verification
+## 2. Frontend & Static Type Verification
 
 ### TypeScript Strict Compilation Check
 To guarantee 0 runtime type mismatches or undefined prop references across Next.js components, Zustand stores, and TanStack Query hooks:
@@ -81,7 +81,7 @@ npx tsc --noEmit
 
 ---
 
-## 🐳 3. Docker & Container Health Diagnostics
+## 3. Docker & Container Health Diagnostics
 
 Container readiness and inter-service communication are verified using `docker compose config` and the FastAPI diagnostic health endpoint (`GET /health`).
 
@@ -118,7 +118,7 @@ curl http://localhost:8000/health
 
 ---
 
-## 🔮 4. Known Limitations & Future Enhancements
+## 4. Known Limitations & Future Enhancements
 
 | Area | Current Implementation | Proposed Future Enhancement |
 | :--- | :--- | :--- |

@@ -1,12 +1,12 @@
 # 08 — Docker & Deployment Guide
 
-## 🐳 Containerization Architecture
+## Containerization Architecture
 
 The DocFlow application is containerized using Docker and orchestrated via Docker Compose. No local installations of Python, Node.js, PostgreSQL, or Redis are required on the host system.
 
 ---
 
-## 📄 1. Backend Dockerfile Breakdown (`backend/Dockerfile`)
+## 1. Backend Dockerfile Breakdown (`backend/Dockerfile`)
 
 ```dockerfile
 # Python 3.11 Slim Base Image
@@ -42,7 +42,7 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 
 ---
 
-## 📄 2. Frontend Dockerfile Breakdown (`frontend/Dockerfile`)
+## 2. Frontend Dockerfile Breakdown (`frontend/Dockerfile`)
 
 Uses a 3-stage multi-stage build to reduce final image size and enforce container security.
 
@@ -89,7 +89,7 @@ CMD ["npm", "start"]
 
 ---
 
-## 🐙 3. Docker Compose Orchestration (`docker-compose.yml`)
+## 3. Docker Compose Orchestration (`docker-compose.yml`)
 
 ```yaml
 services:
@@ -201,7 +201,7 @@ networks:
 
 ---
 
-## 🚀 4. Deployment & Management Commands
+## 4. Deployment & Management Commands
 
 ### Start Container Stack
 ```bash
@@ -229,7 +229,7 @@ docker compose exec backend python seed_admin.py admin@docflow.io AdminPassword1
 
 ---
 
-## 🛠 5. Troubleshooting Guide
+## 5. Troubleshooting Guide
 
 ### Issue: PostgreSQL "FATAL: role 'postgres' does not exist"
 - **Root Cause**: Host volume `postgres_data` contains files initialized from an earlier interrupted run.

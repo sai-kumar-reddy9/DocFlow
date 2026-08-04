@@ -4,7 +4,7 @@ Complete reference documentation for all FastAPI REST API endpoints. Base API UR
 
 ---
 
-## 🔐 1. Authentication & RBAC Endpoints
+## 1. Authentication & RBAC Endpoints
 
 ### `POST /api/v1/auth/register`
 Registers a new user account with Argon2id password hashing. Defaults to `USER` role.
@@ -107,7 +107,7 @@ Verification endpoint testing RBAC enforcement. Restrictive to `ADMIN` users.
 
 ---
 
-## 📄 2. Document Management Endpoints
+## 2. Document Management Endpoints
 
 ### `POST /api/v1/documents/upload`
 Uploads a document file (.pdf, .docx, .txt, <=10MB), stores on disk, inserts DB record, and invalidates Redis cache. Rate limited (10 uploads/min).
@@ -191,7 +191,7 @@ Deletes physical file from disk, deletes DB record, and invalidates Redis user c
 
 ---
 
-## 📊 3. Dashboard Analytics Endpoints
+## 3. Dashboard Analytics Endpoints
 
 ### `GET /api/v1/dashboard/user-stats`
 Returns user dashboard analytical metrics (7-day upload trend, format breakdown, storage usage). Cached in Redis (`dashboard:user:{id}`).
@@ -221,7 +221,7 @@ Returns user dashboard analytical metrics (7-day upload trend, format breakdown,
 
 ---
 
-## 🛠 4. Admin Module & Analytics Endpoints
+## 4. Admin Module & Analytics Endpoints
 
 ### `GET /api/v1/admin/users`
 Lists all registered users with file counts and storage metrics. Paginated.
@@ -323,7 +323,7 @@ Queries paginated audit logs for security auditing.
 
 ---
 
-## 🩺 5. System Health Diagnostic Endpoints
+## 5. System Health Diagnostic Endpoints
 
 ### `GET /health`
 Verifies FastAPI status, PostgreSQL database connectivity, and Redis ping.

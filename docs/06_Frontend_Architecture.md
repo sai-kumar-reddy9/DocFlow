@@ -1,6 +1,6 @@
 # 06 — Frontend Architecture
 
-## 💻 Next.js 16 App Router Layout & Structure
+## Next.js 16 App Router Layout & Structure
 
 The DocFlow frontend is built using **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS**, **TanStack Query v5**, **Zustand**, and **Recharts**.
 
@@ -24,7 +24,7 @@ frontend/app/
 
 ---
 
-## 🔒 1. Protected Route Guard Architecture (`app/(dashboard)/layout.tsx`)
+## 1. Protected Route Guard Architecture (`app/(dashboard)/layout.tsx`)
 
 Security routing is enforced at the layout boundary level before rendering child pages.
 
@@ -70,7 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 ---
 
-## 🐻 2. Zustand Auth Store (`frontend/store/useAuthStore.ts`)
+## 2. Zustand Auth Store (`frontend/store/useAuthStore.ts`)
 
 The global user authentication session is managed via a lightweight **Zustand** store.
 
@@ -96,7 +96,7 @@ interface AuthState {
 
 ---
 
-## 🔄 3. TanStack Query v5 Data Fetching Hooks (`frontend/hooks/use-dashboard.ts`)
+## 3. TanStack Query v5 Data Fetching Hooks (`frontend/hooks/use-dashboard.ts`)
 
 Server state management, caching, and mutation Key invalidation are handled via **TanStack Query**.
 
@@ -114,7 +114,7 @@ Server state management, caching, and mutation Key invalidation are handled via 
 
 ---
 
-## 📈 4. Recharts Visualizations & Component Contracts
+## 4. Recharts Visualizations & Component Contracts
 
 Dashboard visualizations receive live API data mapped through clean TypeScript interfaces (`frontend/types/dashboard.ts`).
 
@@ -126,7 +126,7 @@ Dashboard visualizations receive live API data mapped through clean TypeScript i
 
 ---
 
-## 🎨 5. Admin Console & User Management Guard Rails
+## 5. Admin Console & User Management Guard Rails
 
 The User Management Console (`app/(dashboard)/admin/users/page.tsx`) features frontend guard rails preventing accidental self-demotion or modification of the root administrator:
 

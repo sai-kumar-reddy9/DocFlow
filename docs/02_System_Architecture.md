@@ -1,6 +1,6 @@
 # 02 — System Architecture
 
-## 🏛 Overall System Architecture Diagram
+## Overall System Architecture Diagram
 
 ```mermaid
 flowchart TB
@@ -41,7 +41,7 @@ flowchart TB
 
 ---
 
-## 🎨 1. Frontend Architecture (Next.js 16 App Router)
+## 1. Frontend Architecture (Next.js 16 App Router)
 
 The frontend application is structured using Next.js 16 App Router, TypeScript, Tailwind CSS, TanStack Query v5, and Zustand.
 
@@ -60,7 +60,7 @@ The frontend application is structured using Next.js 16 App Router, TypeScript, 
 
 ---
 
-## ⚡ 2. Backend Architecture (FastAPI & SQLAlchemy 2.0)
+## 2. Backend Architecture (FastAPI & SQLAlchemy 2.0)
 
 The backend service is built with FastAPI, using asynchronous non-blocking I/O and Pydantic v2 schemas.
 
@@ -89,7 +89,7 @@ The backend service is built with FastAPI, using asynchronous non-blocking I/O a
 
 ---
 
-## 🔑 3. Authentication & Authorization Sequence Diagram
+## 3. Authentication & Authorization Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -121,7 +121,7 @@ sequenceDiagram
 
 ---
 
-## 📤 4. Document Upload Sequence Diagram
+## 4. Document Upload Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -156,7 +156,7 @@ sequenceDiagram
 
 ---
 
-## ⚡ 5. Redis Cache & Data Flow Architecture
+## 5. Redis Cache & Data Flow Architecture
 
 ```text
                                ┌────────────────────────┐
@@ -191,7 +191,7 @@ sequenceDiagram
 
 ---
 
-## 🐳 6. Docker Container Orchestration Architecture
+## 6. Docker Container Orchestration Architecture
 
 DocFlow is containerized into four independent services linked on a isolated bridge network (`docflow-network`):
 

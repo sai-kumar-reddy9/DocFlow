@@ -1,6 +1,6 @@
 # 01 — Project Overview
 
-## 📌 Executive Summary & Introduction
+## Executive Summary & Introduction
 
 **DocFlow** is an enterprise-grade, secure Document Management & AI Workflow Platform engineered with modern full-stack web technologies. The platform provides end-to-end document lifecycle management — from secure user authentication and document ingestion to high-performance Redis caching, automated background audit logging, and administrative analytics dashboards.
 
@@ -8,7 +8,7 @@ DocFlow was designed to bridge the gap between enterprise security compliance (R
 
 ---
 
-## 🎯 Problem Statement & Business Objectives
+## Problem Statement & Business Objectives
 
 ### Problem Statement
 Legacy document management systems suffer from key structural vulnerabilities:
@@ -25,33 +25,33 @@ Legacy document management systems suffer from key structural vulnerabilities:
 
 ---
 
-## ⚙️ Core System Features
+## Core System Features
 
-### 🔐 1. Authentication & RBAC System
+### 1. Authentication & RBAC System
 - **Argon2id Hashing**: High-memory, time-cost password hashing protecting against GPU/ASIC brute-force attacks.
 - **HTTP-Only JWT Cookies**: Seamless, XSS-resistant session management via `access_token` cookies.
 - **Role-Based Access Control (RBAC)**: Public registration defaults to `USER` role. Sensitive administrative routes (`/admin/*`) and API endpoints are strictly guarded by `ADMIN` authorization dependencies.
 - **Self & Root Admin Protection**: Administrative UI & API guard rails prevent accidental self-demotion, self-disabling, or modification of the primary system administrator (`admin@docflow.io`).
 
-### 📄 2. Document Management & File Storage
+### 2. Document Management & File Storage
 - **Format Validation**: Strict whitelist for `.pdf`, `.docx`, and `.txt` files.
 - **Size Enforcement**: Server-side 10MB maximum upload boundary.
 - **UUID Filename Masking**: Files stored on disk with randomly generated UUIDs (`uploads/550e8400-e29b-41d4-a716-446655440000.pdf`) while preserving original filenames in database metadata to prevent directory traversal and file overwrites.
 - **Secure File Streaming**: Downloads streamed through FastAPI `FileResponse` enforcing ownership verification.
 
-### ⚡ 3. Caching & Sliding-Window Rate Limiting
+### 3. Caching & Sliding-Window Rate Limiting
 - **Redis Cache Layer**: Caches user document lists (`documents:user:{id}`), user dashboard metrics (`dashboard:user:{id}`), and admin analytics (`analytics:admin:overview`) with automated cache invalidation upon uploads/deletes.
 - **Rate Limiting**: Custom Redis sliding-window algorithm protecting `/auth/login` (max 5 requests/min) and `/documents/upload` (max 10 requests/min).
 - **FakeRedis Fallback**: Seamless local fallback to in-memory `fakeredis` if external Redis server is offline.
 
-### 📊 4. Analytics & Admin Console
+### 4. Analytics & Admin Console
 - **User Dashboard**: Real-time metrics displaying storage usage, total documents, 7-day upload trends, and file format distribution.
 - **Admin Management Console**: System-wide user list, role modification, account enable/disable, global storage overview, and full system activity audit logs.
 - **System Health Diagnostics**: `/health` endpoint checking FastAPI server status, PostgreSQL database connection, and Redis cache ping response.
 
 ---
 
-## 💻 Technology Stack & Architectural Justifications
+## Technology Stack & Architectural Justifications
 
 | Layer | Technology | Architectural Justification |
 | :--- | :--- | :--- |
@@ -70,7 +70,7 @@ Legacy document management systems suffer from key structural vulnerabilities:
 
 ---
 
-## 📂 Project Directory Structure
+## Project Directory Structure
 
 ```text
 Demo Project/
@@ -124,7 +124,7 @@ Demo Project/
 
 ---
 
-## 🔄 High-Level End-to-End Workflow
+## High-Level End-to-End Workflow
 
 ```text
  ┌──────────────┐          HTTP Credentials         ┌────────────────────┐          JWT Issued           ┌────────────────────┐

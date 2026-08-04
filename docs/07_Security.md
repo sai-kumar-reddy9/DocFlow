@@ -1,12 +1,12 @@
 # 07 — Security Architecture
 
-## 🛡 Security Overview & Defense-in-Depth
+## Security Overview & Defense-in-Depth
 
 DocFlow employs a zero-trust, defense-in-depth security model across authentication, session persistence, storage isolation, and rate limiting.
 
 ---
 
-## 🔑 1. Authentication & Password Security
+## 1. Authentication & Password Security
 
 ### Argon2id Password Hashing (`argon2-cffi`)
 Passwords are never stored in plaintext or weak hash formats. DocFlow uses **Argon2id**, winner of the Password Hashing Competition (PHC).
@@ -37,7 +37,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 ---
 
-## 🍪 2. HTTP-Only Cookie Session Persistence
+## 2. HTTP-Only Cookie Session Persistence
 
 Traditional applications store JWT access tokens in browser `LocalStorage` or `SessionStorage`, exposing tokens to cross-site scripting (XSS) extraction attacks.
 
@@ -57,7 +57,7 @@ response.set_cookie(
 
 ---
 
-## 👑 3. Role-Based Access Control (RBAC) & Guard Rails
+## 3. Role-Based Access Control (RBAC) & Guard Rails
 
 ### Public Registration Hardening
 Public user registration (`POST /api/v1/auth/register`) enforces default `role="USER"`:
@@ -78,7 +78,7 @@ Administrative endpoints enforce safety rules preventing lockouts:
 
 ---
 
-## 📁 4. Secure File Storage & Path Traversal Protection
+## 4. Secure File Storage & Path Traversal Protection
 
 ### Upload Boundaries & Whitelist
 - **Extension Whitelist**: Allowed extensions are strictly `.pdf`, `.docx`, `.txt`.
@@ -102,7 +102,7 @@ By discarding client-supplied filenames for disk operations and storing files in
 
 ---
 
-## 🔒 5. Zero-Trust Ownership Authorization
+## 5. Zero-Trust Ownership Authorization
 
 Every document query, download, and deletion verifies that `document.owner_id == current_user.id`:
 
@@ -116,7 +116,7 @@ if document.owner_id != current_user.id:
 
 ---
 
-## ⏱ 6. Redis Rate Limiting & Denial-of-Service Defense
+## 6. Redis Rate Limiting & Denial-of-Service Defense
 
 Atomic Redis sorted sets block high-frequency request floods:
 - **Login Defense**: Max 5 authentication requests per minute per IP address.
@@ -124,6 +124,6 @@ Atomic Redis sorted sets block high-frequency request floods:
 
 ---
 
-## 📝 7. System Activity Audit Logging
+## 7. System Activity Audit Logging
 
 Security-relevant actions (`USER_LOGIN`, `DOCUMENT_UPLOADED`, `DOCUMENT_DELETED`, `USER_ENABLED`, `USER_DISABLED`, `ROLE_UPDATED`) record client IP addresses and user IDs in immutable PostgreSQL audit tables.
